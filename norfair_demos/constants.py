@@ -1,6 +1,3 @@
-import os
-from pathlib import Path
-
 from __init__ import BASE_DIR
 
 STATIC_FILES = BASE_DIR / "cfg_files"
