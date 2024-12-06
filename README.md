@@ -1,1 +1,3 @@
-# mot-demos-norfair
+# norfair-demos
+
+Describe your project here.
