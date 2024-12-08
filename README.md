@@ -1,5 +1,8 @@
 # norfair-demos
 
+## Презентация
+Маленький обзор трекинга + маленький гайд по norfair -- [./resources/doc/mot-demos.pdf](./resources/doc/mot-demos.pdf)
+
 ## Установка зависимостей
 ```bash
 pip install -r requirements.txt
