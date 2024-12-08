@@ -1,5 +1,6 @@
+from abc import abstractmethod
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol, Iterable
 
 import numpy as np
 import cv2
@@ -10,11 +11,18 @@ from detectron2.engine import DefaultPredictor
 from norfair import Detection
 
 
-class BackgroundCircleDetector:
+class Detector(Protocol):
+    @abstractmethod
+    def __call__(self, frame: Mat | np.ndarray[Any, np.dtype] | np.ndarray) -> Iterable[Detection]:
+        pass
+
+
+class BackgroundCircleDetector(Detector):
     def __init__(self):
+        # Создаём модель для вычитания фона
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2()
 
-    def __call__(self, frame: Mat | np.ndarray[Any, np.dtype] | np.ndarray):
+    def __call__(self, frame: Mat | np.ndarray[Any, np.dtype] | np.ndarray) -> list[Detection]:
         fg_mask = self.bg_subtractor.apply(frame)
 
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
@@ -32,8 +40,8 @@ class BackgroundCircleDetector:
         return [Detection(points) for points in np.array(detections)]
 
 
-class CircleDetector:
-    def __call__(self, frame: Mat | np.ndarray[Any, np.dtype] | np.ndarray):
+class CircleDetector(Detector):
+    def __call__(self, frame: Mat | np.ndarray[Any, np.dtype] | np.ndarray) -> list[Detection]:
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         circles = cv2.HoughCircles(
@@ -56,7 +64,7 @@ class CircleDetector:
         return [Detection(points) for points in np.array(detections)]
 
 
-class DetectronCarDetector:
+class DetectronCarDetector(Detector):
     cfg: CfgNode
     detector: DefaultPredictor
 
@@ -68,7 +76,7 @@ class DetectronCarDetector:
         self.cfg = cfg
         self.detector = DefaultPredictor(cfg)
 
-    def __call__(self, frame: Mat | np.ndarray[Any, np.dtype] | np.ndarray):
+    def __call__(self, frame: Mat | np.ndarray[Any, np.dtype] | np.ndarray) -> list[Detection]:
         _detections = self.detector(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         return [
             Detection(p)
